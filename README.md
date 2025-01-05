@@ -40,5 +40,10 @@ After the user navigates to Tab 2 (Photos), they can tap/click on the camera but
 
 ```bash
 ionic start base-ionic-react my-first-app --type=react --capacitor
+npm install @reduxjs/toolkit
+npm install react-redux
+npm install dexie
+npm install dexie-react-hooks
+npm install react-hook-form
 npm audit fix
 ```
