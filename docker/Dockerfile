@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21
+FROM eclipse-temurin:17
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
 ENV PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools/33.0.0
@@ -20,9 +20,15 @@ RUN sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" "ext
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
-    npm install -g @ionic/cli
+    npm install -g @ionic/cli @capacitor/cli
 
-RUN npm install -g @capacitor/cli
+ENV GRADLE_VERSION=8.12
+ENV GRADLE_HOME=/opt/gradle
+ENV PATH=$PATH:$GRADLE_HOME/gradle-$GRADLE_VERSION/bin
+
+RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
+    unzip /tmp/gradle-${GRADLE_VERSION}-bin.zip -d /opt/gradle && \
+    rm /tmp/gradle-${GRADLE_VERSION}-bin.zip
 
 WORKDIR /app
 

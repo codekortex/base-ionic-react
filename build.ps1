@@ -44,15 +44,22 @@ if (-not (docker-compose ps | Select-String "android-builder" | Select-String "U
     exit 1
 }
 
+$androidDir = Join-Path -Path (Get-Location) -ChildPath "android"
+if (-not (Test-Path -Path $androidDir -PathType Container)) {
+    Write-Host "Agregando la plataforma Android..." -ForegroundColor Cyan
+    docker-compose exec android-builder bash -c "ionic cap add android"
+}
+
 Write-Host "Ejecutando comandos de compilación dentro del contenedor..." -ForegroundColor Cyan
 try {
     docker-compose exec android-builder bash -c "
         set -e
         npm install &&
         ionic build &&
+        ionic cap copy android &&
         ionic cap sync android &&
         cd android &&
-        ./gradlew assembleRelease
+        gradle assembleDebug
     "
     Write-SuccessMessage "Compilación completada exitosamente."
     Write-Host "El APK se encuentra en android/app/build/outputs/apk/release/" -ForegroundColor Yellow

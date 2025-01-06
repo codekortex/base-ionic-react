@@ -11,8 +11,6 @@ services:
       - .:/app
       - gradle_cache:/root/.gradle
       - android_sdk_cache:/opt/android-sdk
-    environment:
-      - ANDROID_SDK_ROOT=/opt/android-sdk
 
 volumes:
   gradle_cache:
