@@ -7,7 +7,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { addUser, fetchUsers, updateUser } from '../store/slices/userSlice';
 import { UserModelView } from '../components/models/UserModelView';
 import { FormInput } from './models/FormInput';
-import { selectUsersLoading } from '../store/selectors/userSelectors';
+import { selectUsersError, selectUsersLoading } from '../store/selectors/userSelectors';
 
 const UserFormPage: React.FC = () => {
     const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormInput>();
@@ -16,7 +16,7 @@ const UserFormPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const users = useSelector((state: RootState) => state.users.users);
     const loading = useSelector((state: RootState) => selectUsersLoading(state));
-    const [error, setError] = React.useState<string | null>(null);
+    const error = useSelector((state: RootState) => selectUsersError(state));
 
     useEffect(() => {
         if (id) {
@@ -30,28 +30,22 @@ const UserFormPage: React.FC = () => {
     }, [id, users, setValue, dispatch]);
 
     const onSubmit: SubmitHandler<FormInput> = async (data) => {
-        setError(null);
-        try {
-            if (id) {
-                const updatedUser: UserModelView = {
-                    id: parseInt(id, 10),
-                    name: data.name,
-                    email: data.email,
-                };
-                await dispatch(updateUser(updatedUser)).unwrap();
-            } else {
-                const newUser: UserModelView = {
-                    id: Date.now(),
-                    name: data.name,
-                    email: data.email,
-                };
-                await dispatch(addUser(newUser)).unwrap();
-            }
-            history.push('/user-list');
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
+        if (id) {
+            const updatedUser: UserModelView = {
+                id: parseInt(id, 10),
+                name: data.name,
+                email: data.email,
+            };
+            await dispatch(updateUser(updatedUser)).unwrap();
+        } else {
+            const newUser: UserModelView = {
+                id: Date.now(),
+                name: data.name,
+                email: data.email,
+            };
+            await dispatch(addUser(newUser)).unwrap();
         }
+        history.push('/user-list');
     };
 
     return (
@@ -91,7 +85,7 @@ const UserFormPage: React.FC = () => {
                     </IonButton>
                 </form>
 
-                {error && <IonAlert isOpen={!!error} onDidDismiss={() => setError(null)} header="Error" message={error} buttons={['OK']} />}
+                {error && <IonAlert isOpen={!!error} header="Error" message={error} buttons={['OK']} />}
             </IonContent>
         </IonPage>
     );
