@@ -4,7 +4,7 @@ import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem,
 import { RootState, AppDispatch } from '../store';
 import { useHistory } from 'react-router-dom';
 import { selectAllUsers, selectUsersError, selectUsersLoading } from '../store/selectors/userSelectors';
-import { deleteUser, fetchUsers } from '../store/slices/userSlice';
+import { deleteUser, fetchUsers, clearError } from '../store/slices/userSlice';
 import { UserModelView } from '../components/models/UserModelView';
 import UserCard from '../components/ui/UserCard';
 

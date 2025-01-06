@@ -4,48 +4,45 @@ import { useDispatch, useSelector } from 'react-redux';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonLabel, IonInput, IonButton, IonSpinner, IonAlert } from '@ionic/react';
 import { RootState, AppDispatch } from '../store';
 import { useHistory, useParams } from 'react-router-dom';
-import { addUser, fetchUsers, updateUser } from '../store/slices/userSlice';
+import { addUser, clearError, fetchUserById, updateUser } from '../store/slices/userSlice';
 import { UserModelView } from '../components/models/UserModelView';
 import { FormInput } from './models/FormInput';
-import { selectUsersError, selectUsersLoading } from '../store/selectors/userSelectors';
+import { selectAllUsers, selectUsersError, selectUsersLoading } from '../store/selectors/userSelectors';
 
 const UserFormPage: React.FC = () => {
     const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormInput>();
     const dispatch: AppDispatch = useDispatch();
     const history = useHistory();
     const { id } = useParams<{ id: string }>();
-    const users = useSelector((state: RootState) => state.users.users);
     const loading = useSelector((state: RootState) => selectUsersLoading(state));
     const error = useSelector((state: RootState) => selectUsersError(state));
+    const users = useSelector((state: RootState) => selectAllUsers(state));
 
     useEffect(() => {
         if (id) {
             const userId = parseInt(id, 10);
-            const user = users.find(u => u.id === userId);
+            dispatch(fetchUserById(userId));
+
+            const user = users.find((user: UserModelView) => user.id === userId);
             if (user) {
                 setValue('name', user.name);
                 setValue('email', user.email);
             }
+
         }
-    }, [id, users, setValue, dispatch]);
+    }, [id, dispatch, setValue, users]);
 
     const onSubmit: SubmitHandler<FormInput> = async (data) => {
-        if (id) {
-            const updatedUser: UserModelView = {
-                id: parseInt(id, 10),
-                name: data.name,
-                email: data.email,
-            };
-            await dispatch(updateUser(updatedUser)).unwrap();
+        const result = id
+            ? await dispatch(updateUser({ id: parseInt(id, 10), ...data }))
+            : await dispatch(addUser({ id: Date.now(), ...data }));
+
+        if (updateUser.rejected.match(result)) {
+            if (id) dispatch(fetchUserById(parseInt(id, 10)));
+            history.push('/user-list');
         } else {
-            const newUser: UserModelView = {
-                id: Date.now(),
-                name: data.name,
-                email: data.email,
-            };
-            await dispatch(addUser(newUser)).unwrap();
+            history.push('/user-list');
         }
-        history.push('/user-list');
     };
 
     return (
@@ -85,7 +82,9 @@ const UserFormPage: React.FC = () => {
                     </IonButton>
                 </form>
 
-                {error && <IonAlert isOpen={!!error} header="Error" message={error} buttons={['OK']} />}
+                {error && <IonAlert isOpen={!!error} header="Error" message={error} buttons={[
+                    { text: 'Ok', handler: () => dispatch(clearError()) }
+                ]} />}
             </IonContent>
         </IonPage>
     );

@@ -17,6 +17,15 @@ export const fetchUsers = createAsyncThunk('users/fetchUsers', async () => {
     return response;
 });
 
+export const fetchUserById = createAsyncThunk<User | undefined, number>(
+    'users/fetchById',
+    async (id: number) => {
+        const response = await userRepository.getUserById(id);
+        return response;
+    }
+);
+
+
 export const addUser = createAsyncThunk('users/addUser', async (user: User) => {
     await userRepository.addUser(user);
     return user;
@@ -35,7 +44,11 @@ export const deleteUser = createAsyncThunk('users/deleteUser', async (id: number
 const userSlice = createSlice({
     name: 'users',
     initialState,
-    reducers: {},
+    reducers: {
+        clearError(state) {
+            state.error = null;
+        },
+    },
     extraReducers: (builder) => {
 
         builder.addCase(fetchUsers.pending, (state) => {
@@ -49,6 +62,27 @@ const userSlice = createSlice({
         builder.addCase(fetchUsers.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || 'Error desconocido al cargar usuarios';
+        });
+
+        builder.addCase(fetchUserById.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+
+        builder.addCase(fetchUserById.fulfilled, (state, action: PayloadAction<User | undefined>) => {
+            if (action.payload) {
+
+                if (!state.users.some(user => user.id === action.payload?.id)) {
+                    state.users.push(action.payload);
+                }
+            }
+            state.loading = false;
+        });
+
+
+        builder.addCase(fetchUserById.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || 'Error al obtener usuario';
         });
 
 
@@ -100,5 +134,5 @@ const userSlice = createSlice({
     },
 });
 
-
+export const { clearError } = userSlice.actions;
 export default userSlice.reducer;
