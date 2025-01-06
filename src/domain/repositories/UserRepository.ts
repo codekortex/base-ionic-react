@@ -8,7 +8,7 @@ export class UserRepository implements IUserRepository {
   constructor() {
     this.userService = new UserService();
     this.userService.open().catch((err) => {
-      console.error('Failed to open db:', err.stack || err);
+      console.error("Failed to open db:", err.stack || err);
     });
   }
 
@@ -16,43 +16,37 @@ export class UserRepository implements IUserRepository {
     return await this.userService.getAllUsers();
   }
 
-  async getUserById(id: number): Promise<User | undefined> {
-    const user = await this.userService.getUserById(id);
-    if (user) {
-      return user;
-    } else {
-      throw new Error(`User with id ${id} not found`);
-    }
-  }
-
-  async addUser(user: User): Promise<number> {
+  async addUser(user: User): Promise<User> {
     const users = await this.userService.getAllUsers();
     if (users.some((u) => u.email === user.email)) {
       throw new Error(`User with email ${user.email} already exists`);
     }
-    return await this.userService.addUser(user);
+    const id = await this.userService.addUser(user);
+    return { ...user, id };
   }
 
-  async updateUser(user: User): Promise<void> {
-    const findUser = await this.userService.getUserById(user.id);
-    if (findUser) {
-      if (findUser.email !== user.email) {
-        const users = await this.userService.getAllUsers();
-        if (users.some((u) => u.email === user.email)) {
-          throw new Error(`User with email ${user.email} already exists`);
-        }
-      }
-    } else {
+  async updateUser(user: User): Promise<User> {
+    const existingUser = await this.userService.getUserById(user.id);
+    if (!existingUser) {
       throw new Error(`User with id ${user.id} not found`);
     }
+
+    if (existingUser.email !== user.email) {
+      const users = await this.userService.getAllUsers();
+      if (users.some((u) => u.email === user.email)) {
+        throw new Error(`User with email ${user.email} already exists`);
+      }
+    }
+
+    await this.userService.updateUser(user);
+    return user;
   }
 
   async deleteUser(id: number): Promise<void> {
     const user = await this.userService.getUserById(id);
-    if (user) {
-      await this.userService.deleteUser(id);
-    } else {
+    if (!user) {
       throw new Error(`User with id ${id} not found`);
     }
+    await this.userService.deleteUser(id);
   }
 }

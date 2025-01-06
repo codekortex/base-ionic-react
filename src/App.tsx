@@ -1,16 +1,10 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import {
   IonApp,
-  IonIcon,
-  IonLabel,
   IonRouterOutlet,
-  IonTabBar,
-  IonTabButton,
-  IonTabs,
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { images, square, triangle } from 'ionicons/icons';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -30,8 +24,6 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import UserFormPage from './pages/UserFormPage';
-import UserListPage from './pages/UserListPage';
 
 setupIonicReact();
 
@@ -39,10 +31,7 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route exact path="/user-list" component={UserListPage} />
-        <Route exact path="/add-user" component={UserFormPage} />
-        <Route exact path="/edit-user/:id" component={UserFormPage} />
-        <Redirect exact from="/" to="/user-list" />
+        
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>
