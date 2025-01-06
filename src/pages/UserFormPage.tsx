@@ -7,6 +7,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { addUser, fetchUsers, updateUser } from '../store/slices/userSlice';
 import { UserModelView } from '../components/models/UserModelView';
 import { FormInput } from './models/FormInput';
+import { selectUsersLoading } from '../store/selectors/userSelectors';
 
 const UserFormPage: React.FC = () => {
     const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormInput>();
@@ -14,7 +15,7 @@ const UserFormPage: React.FC = () => {
     const history = useHistory();
     const { id } = useParams<{ id: string }>();
     const users = useSelector((state: RootState) => state.users.users);
-    const [loading, setLoading] = React.useState(false);
+    const loading = useSelector((state: RootState) => selectUsersLoading(state));
     const [error, setError] = React.useState<string | null>(null);
 
     useEffect(() => {
@@ -24,14 +25,11 @@ const UserFormPage: React.FC = () => {
             if (user) {
                 setValue('name', user.name);
                 setValue('email', user.email);
-            } else {
-                dispatch(fetchUsers());
             }
         }
     }, [id, users, setValue, dispatch]);
 
     const onSubmit: SubmitHandler<FormInput> = async (data) => {
-        setLoading(true);
         setError(null);
         try {
             if (id) {
@@ -53,7 +51,6 @@ const UserFormPage: React.FC = () => {
         } catch (err: any) {
             setError(err.message);
         } finally {
-            setLoading(false);
         }
     };
 

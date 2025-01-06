@@ -48,36 +48,57 @@ const userSlice = createSlice({
         });
         builder.addCase(fetchUsers.rejected, (state, action) => {
             state.loading = false;
-            state.error = action.error.message || 'Error al cargar usuarios';
+            state.error = action.error.message || 'Error desconocido al cargar usuarios';
         });
 
 
+        builder.addCase(addUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
         builder.addCase(addUser.fulfilled, (state, action: PayloadAction<User>) => {
-            state.users.push(action.payload);
+            if (!state.users.some(user => user.id === action.payload.id)) {
+                state.users.push(action.payload);
+            }
+            state.loading = false;
         });
         builder.addCase(addUser.rejected, (state, action) => {
+            state.loading = false;
             state.error = action.error.message || 'Error al agregar usuario';
         });
 
 
+        builder.addCase(updateUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
         builder.addCase(updateUser.fulfilled, (state, action: PayloadAction<User>) => {
             const index = state.users.findIndex(user => user.id === action.payload.id);
             if (index !== -1) {
                 state.users[index] = action.payload;
             }
+            state.loading = false;
         });
         builder.addCase(updateUser.rejected, (state, action) => {
+            state.loading = false;
             state.error = action.error.message || 'Error al actualizar usuario';
         });
 
 
+        builder.addCase(deleteUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
         builder.addCase(deleteUser.fulfilled, (state, action: PayloadAction<number>) => {
             state.users = state.users.filter(user => user.id !== action.payload);
+            state.loading = false;
         });
         builder.addCase(deleteUser.rejected, (state, action) => {
+            state.loading = false;
             state.error = action.error.message || 'Error al eliminar usuario';
         });
     },
 });
+
 
 export default userSlice.reducer;
